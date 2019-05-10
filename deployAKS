@@ -1,0 +1,8 @@
+# RBAC serverAppId
+rbacAppId
+
+# RBAC AAD Server App Id
+serverAppId=""
+
+# RBAC AAD Client App Id
+clientAppId="

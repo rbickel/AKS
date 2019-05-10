@@ -1,13 +1,15 @@
 #scripting of the following steps:https://docs.microsoft.com/en-us/azure/aks/azure-ad-integration
 
-# Create Service Principal for rbac-enabled cluster
 rbacAppName="ASK-RBAC"
+serverAppName="AKS-RBAC-ServerAAD"
+clientAppName="AKS-RBAC-ClientAAD"
+
+# Create Service Principal for rbac-enabled cluster
 az ad sp create-for-rbac --name $rbacAppName --role Contributor
 rbacAppId=$(az ad app list --display-name $rbacAppName --query [].appId -o tsv)
 echo $rbacAppId
 
 # The Server app registration is a Web app
-serverAppName="AKS-RBAC-ServerAAD"
 az ad app create --display-name $serverAppName --identifier-uris https://$serverAppName
 serverAppId=$(az ad app list --display-name $serverAppName --query [].appId -o tsv)
 echo $serverAppId
@@ -24,8 +26,6 @@ az ad app permission grant --id $serverAppId --api 00000003-0000-0000-c000-00000
 az ad app permission admin-consent --id  $serverAppId
 
 # The Client app registration is a Native app
-# az ad app create --display-name ss-aad-aks-client --native-app true
-clientAppName="AKS-RBAC-ClientAAD"
 clientAppId=$(az ad app create \
     --display-name "${clientAppName}" \
     --native-app \
