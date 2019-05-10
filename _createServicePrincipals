@@ -20,9 +20,8 @@ az ad app permission add \
        7ab1d382-f21e-4acd-a863-ba3e13f7da61=Role
 
 #Require Directory Admin permissions
-#az ad app permission grant --id $serverAppId --api 00000003-0000-0000-c000-000000000000
-#az ad app permission admin-consent --id  $serverAppId
-
+az ad app permission grant --id $serverAppId --api 00000003-0000-0000-c000-000000000000
+az ad app permission admin-consent --id  $serverAppId
 
 # The Client app registration is a Native app
 # az ad app create --display-name ss-aad-aks-client --native-app true
