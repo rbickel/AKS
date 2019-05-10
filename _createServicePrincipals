@@ -1,0 +1,38 @@
+#scripting of the following steps:https://docs.microsoft.com/en-us/azure/aks/azure-ad-integration
+
+# Create Service Principal for rbac-enabled cluster
+rbacAppName="ASK-RBAC"
+az ad sp create-for-rbac --name $rbacAppName --role Contributor
+rbacAppId=$(az ad app list --display-name $rbacAppName --query [].appId -o tsv)
+echo $rbacAppId
+
+# The Server app registration is a Web app
+serverAppName="AKS-RBAC-ServerAAD"
+az ad app create --display-name $serverAppName --identifier-uris https://$serverAppName
+serverAppId=$(az ad app list --display-name $serverAppName --query [].appId -o tsv)
+echo $serverAppId
+az ad app update --id $serverAppId --set groupMembershipClaims=All
+az ad app permission add \
+    --id $serverAppId \
+    --api 00000003-0000-0000-c000-000000000000 \
+    --api-permissions e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope \
+       06da0dbc-49e2-44d2-8312-53f166ab848a=Scope \
+       7ab1d382-f21e-4acd-a863-ba3e13f7da61=Role
+
+#Require Directory Admin permissions
+#az ad app permission grant --id $serverAppId --api 00000003-0000-0000-c000-000000000000
+#az ad app permission admin-consent --id  $serverAppId
+
+
+# The Client app registration is a Native app
+# az ad app create --display-name ss-aad-aks-client --native-app true
+clientAppName="AKS-RBAC-ClientAAD"
+clientAppId=$(az ad app create \
+    --display-name "${clientAppName}" \
+    --native-app \
+    --reply-urls "https://${clientAppName}" \
+    --query appId -o tsv)
+az ad sp create --id $clientAppId
+oAuthPermissionId=$(az ad app show --id $serverAppId --query "oauth2Permissions[0].id" -o tsv)
+az ad app permission add --id $clientAppId --api $serverAppId --api-permissions $oAuthPermissionId=Scope
+az ad app permission grant --id $clientAppId --api $serverAppId
