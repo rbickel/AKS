@@ -1,8 +1,16 @@
-# RBAC serverAppId
-rbacAppId
 
-# RBAC AAD Server App Id
-serverAppId=""
 
-# RBAC AAD Client App Id
-clientAppId="
+
+. ./_createServicePrincipals
+az group create --name myResourceGroup --location WestEurope
+tenantId=$(az account show --query tenantId -o tsv)
+
+az aks create \
+    --resource-group myResourceGroup \
+    --name $aksname \
+    --node-count 1 \
+    --generate-ssh-keys \
+    --aad-server-app-id $serverApplicationId \
+    --aad-server-app-secret $serverApplicationSecret \
+    --aad-client-app-id $clientApplicationId \
+    --aad-tenant-id $tenantId
