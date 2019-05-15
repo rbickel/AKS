@@ -1,15 +1,20 @@
 
-
+RG=aksbestpractices
+REGION=WestEurope
 
 . ./_createServicePrincipals
-az group create --name myResourceGroup --location WestEurope
+az group create --name $RG --location $REGION
 tenantId=$(az account show --query tenantId -o tsv)
 
 az aks create \
-    --resource-group myResourceGroup \
+    --resource-group $RG \
     --name $aksname \
     --node-count 1 \
     --generate-ssh-keys \
+    --enable-vmss \
+    --enable-cluster-autoscaler \
+    --min-count 1 \
+     -max-count 3 \
     --aad-server-app-id $serverApplicationId \
     --aad-server-app-secret $serverApplicationSecret \
     --aad-client-app-id $clientApplicationId \
