@@ -4,11 +4,11 @@ REGION=WestEurope
 CLUSTERNAME="rabickel-aks-bestpractices"
 
 #Set this values if the principals are already existing for the AAD RBAC integration
-servicePrincipalAppId="9645b57c-c16c-49c3-afbc-4659da76dee0"
+servicePrincipalAppId=""
 servicePrincipalAppSecret=""
-serverApplicationId="e672b3f9-1e14-44dc-843c-6c146ec1a8eb"
+serverApplicationId=""
 serverApplicationSecret=""
-clientApplicationId="16799852-5023-4102-8378-9686ec4b1d4b"
+clientApplicationId=""
 
 #Create the service principals needed for AAD RBAC integration
 #https://docs.microsoft.com/en-us/azure/aks/azure-ad-integration-cli?view=azureadps-1.0
@@ -32,7 +32,7 @@ roleRef:
 subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
-  name: ${userPrincipalName}" >>> ./templates/basic-azure-ad-binding.yaml
+  name: ${userPrincipalName}" > ./templates/basic-azure-ad-binding.yaml
 
 az aks get-credentials --resource-group $RG --name $CLUSTERNAME --admin
 kubectl apply -f ./templates/basic-azure-ad-binding.yaml

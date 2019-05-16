@@ -2,8 +2,12 @@ aksname=$1
 
 #Create AKS Service Principal
 SERVICE_PRINCIPAL_NAME="${aksname}-sp"
-servicePrincipalAppSecret=$(az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME --query password --output tsv)
+az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME
 servicePrincipalAppId=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+servicePrincipalAppSecret=$(az ad sp credential reset \
+    --name http://$SERVICE_PRINCIPAL_NAME \
+    --credential-description "AKSPassword" \
+    --query password -o tsv)
 
 # Create the Azure AD application
 serverApplicationId=$(az ad app create \
