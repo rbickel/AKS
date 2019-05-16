@@ -1,6 +1,7 @@
 #Deployment settings
-RG=aksbestpractices
+RG="aksbestpractices"
 REGION=WestEurope
+CLUSTERNAME="rabickel-aks-bestpractices"
 
 #Set this values if the principals are already existing for the AAD RBAC integration
 clientApplicationId=""
@@ -11,7 +12,7 @@ servicePrincipalAppSecret=""
 
 #Create the service principals needed for AAD RBAC integration
 #https://docs.microsoft.com/en-us/azure/aks/azure-ad-integration-cli?view=azureadps-1.0
-. ./_createServicePrincipals
+. ./_createServicePrincipals $CLUSTERNAME
 az group create --name $RG --location $REGION
 tenantId=$(az account show --query tenantId -o tsv)
 

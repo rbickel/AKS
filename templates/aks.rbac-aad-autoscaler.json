@@ -22,7 +22,7 @@
         },
         "kubernetesVersion": {
             "type": "string",
-            "defaultValue": "1.11.7"
+            "defaultValue": "1.13.5"
         }
     },
     "variables": {
@@ -76,7 +76,7 @@
             "location": "[resourceGroup().location]",
             "properties": {
                 "sku": {
-                    "Name": "Free"
+                    "Name": "PerGB2018"
                 }
             },
             "resources": [
@@ -151,11 +151,11 @@
             ],
             "name": "[variables('aks').name]",
             "type": "Microsoft.ContainerService/managedClusters",
-            "apiVersion": "2018-03-31",
+            "apiVersion": "2019-02-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "project": "POC",
-                "author": "Senthuran"
+                "author": "rabickel"
             },
             "properties": {
                 "kubernetesVersion": "[variables('aks').kubernetesVersion]",

@@ -1,7 +1,7 @@
-aksname="rabickel-aks-bestpractices"
+aksname=$1
 
 #Create AKS Service Principal
-SERVICE_PRINCIPAL_NAME="aks-service-principal"
+SERVICE_PRINCIPAL_NAME="${aksname}-sp"
 servicePrincipalAppSecret=$(az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME --query password --output tsv)
 servicePrincipalAppId=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
 
