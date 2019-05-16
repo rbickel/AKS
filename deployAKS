@@ -1,21 +1,32 @@
-
+#Deployment settings
 RG=aksbestpractices
 REGION=WestEurope
 
+#Set this values if the principals are already existing for the AAD RBAC integration
+clientApplicationId=""
+serverApplicationId=""
+serverApplicationSecret=""
+servicePrincipalAppId=""
+servicePrincipalAppSecret=""
+
+#Create the service principals needed for AAD RBAC integration
+#https://docs.microsoft.com/en-us/azure/aks/azure-ad-integration-cli?view=azureadps-1.0
 . ./_createServicePrincipals
 az group create --name $RG --location $REGION
 tenantId=$(az account show --query tenantId -o tsv)
 
-az aks create \
-    --resource-group $RG \
-    --name $aksname \
-    --node-count 1 \
-    --generate-ssh-keys \
-    --enable-vmss \
-    --enable-cluster-autoscaler \
-    --min-count 1 \
-     -max-count 3 \
-    --aad-server-app-id $serverApplicationId \
-    --aad-server-app-secret $serverApplicationSecret \
-    --aad-client-app-id $clientApplicationId \
-    --aad-tenant-id $tenantId
+az group deployment create --resource-group $RG --template-file ./templates/aks.rbac-aad-autoscaler.json --parameters servicePrincipalAppId=$servicePrincipalAppId servicePrincipalAppSecret=$servicePrincipalAppSecret aadTenantId=$tenantId aadClientAppId=$clientApplicationId aadServerAppId=$serverApplicationId aadServerAppSecret=$serverApplicationSecret
+
+#az aks create \
+#    --resource-group $RG \
+#    --name $aksname \
+#    --node-count 1 \
+#    --generate-ssh-keys \
+#    --enable-vmss \
+#    --enable-cluster-autoscaler \
+#    --min-count 1 \
+#     -max-count 3 \
+#    --aad-server-app-id $serverApplicationId \
+#    --aad-server-app-secret $serverApplicationSecret \
+#    --aad-client-app-id $clientApplicationId \
+#    --aad-tenant-id $tenantId
