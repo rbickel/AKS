@@ -4,11 +4,11 @@ REGION=WestEurope
 CLUSTERNAME="rabickel-aks-bestpractices"
 
 #Set this values if the principals are already existing for the AAD RBAC integration
-clientApplicationId=""
-serverApplicationId=""
-serverApplicationSecret=""
-servicePrincipalAppId=""
+servicePrincipalAppId="9645b57c-c16c-49c3-afbc-4659da76dee0"
 servicePrincipalAppSecret=""
+serverApplicationId="e672b3f9-1e14-44dc-843c-6c146ec1a8eb"
+serverApplicationSecret=""
+clientApplicationId="16799852-5023-4102-8378-9686ec4b1d4b"
 
 #Create the service principals needed for AAD RBAC integration
 #https://docs.microsoft.com/en-us/azure/aks/azure-ad-integration-cli?view=azureadps-1.0
@@ -16,7 +16,26 @@ servicePrincipalAppSecret=""
 az group create --name $RG --location $REGION
 tenantId=$(az account show --query tenantId -o tsv)
 
-az group deployment create --resource-group $RG --template-file ./templates/aks.rbac-aad-autoscaler.json --parameters servicePrincipalAppId=$servicePrincipalAppId servicePrincipalAppSecret=$servicePrincipalAppSecret aadTenantId=$tenantId aadClientAppId=$clientApplicationId aadServerAppId=$serverApplicationId aadServerAppSecret=$serverApplicationSecret
+az group deployment create --resource-group $RG --template-file ./templates/aks.rbac-aad-autoscaler.json --parameters clusterName=$CLUSTERNAME servicePrincipalClientId=$servicePrincipalAppId servicePrincipalClientSecret=$servicePrincipalAppSecret aadTenantId=$tenantId aadClientAppId=$clientApplicationId aadServerAppId=$serverApplicationId aadServerAppSecret=$serverApplicationSecret aksRegion=$REGION workspaceName=$CLUSTERNAME workspaceResourceGroup=$RG
+
+#set the first RBAC binding to the current user
+userPrincipalName=$(az ad signed-in-user show --query userPrincipalName -o tsv)
+
+echo "apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${CLUSTERNAME}-cluster-admins
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: ${userPrincipalName}" >>> ./templates/basic-azure-ad-binding.yaml
+
+az aks get-credentials --resource-group $RG --name $CLUSTERNAME --admin
+kubectl apply -f ./templates/basic-azure-ad-binding.yaml
 
 #az aks create \
 #    --resource-group $RG \
