@@ -27,8 +27,8 @@ steps:
   inputs:
     #sourceFolder: # Optional
     contents: |
-     *
-     templates\**
+     **\*
+     !.git\**
     targetFolder: '$(Build.ArtifactStagingDirectory)'
     cleanTargetFolder: true # Optional
     overWrite: true # Optional
