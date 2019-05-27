@@ -23,11 +23,12 @@ steps:
 # Copy Files
 # Copy files from source folder to target folder using match patterns (The match patterns will only match file paths, not folder paths)
 - task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
   inputs:
     #sourceFolder: # Optional
     contents: |
-     '*'
-     **\templates\**
+     *
+     templates\**
     targetFolder: '$(Build.ArtifactStagingDirectory)'
     cleanTargetFolder: true # Optional
     overWrite: true # Optional
