@@ -1,19 +1,38 @@
-RG="askbestpractices-rg"
-TENANTID=$(az account show | jq -r '.tenantId')
+#Deployment settings
+RG="aksbestpractices"
+REGION=WestEurope
+CLUSTERNAME="rabickel-aks-bestpractices"
 
-# RBAC AAD Server App Id
+#Set this values if the principals are already existing for the AAD RBAC integration
+servicePrincipalAppId=""
+servicePrincipalAppSecret=""
 serverApplicationId=""
 serverApplicationSecret=""
-# RBAC AAD Client App Id
 clientApplicationId=""
 
-#comment this line if principals are already created
-. ./_createServicePrincipals
+#Create the service principals needed for AAD RBAC integration
+#https://docs.microsoft.com/en-us/azure/aks/azure-ad-integration-cli?view=azureadps-1.0
+. ./_createServicePrincipals $CLUSTERNAME
+az group create --name $RG --location $REGION
+tenantId=$(az account show --query tenantId -o tsv)
 
-echo $rbacAppId
-echo $serverApplicationId
-echo $clientAppId
+az group deployment create --resource-group $RG --template-file ./templates/aks.rbac-aad-autoscaler.json --parameters clusterName=$CLUSTERNAME servicePrincipalClientId=$servicePrincipalAppId servicePrincipalClientSecret=$servicePrincipalAppSecret aadTenantId=$tenantId aadClientAppId=$clientApplicationId aadServerAppId=$serverApplicationId aadServerAppSecret=$serverApplicationSecret aksRegion=$REGION workspaceName=$CLUSTERNAME workspaceResourceGroup=$RG
 
-az group create --name $RG --location "West Europe"
-az group deployment create --resource-group $RG --template-file ./templates/aks.rbac-aad-autoscaler.json \
-   --parameters aadTenantId=$TENANTID aadServerAppId=$serverApplicationId aadServerAppSecret=$serverApplicationSecret aadClientAppId=$clientApplicationId kubernetesVersion=1.13.5 servicePrincipalClientId=70653904-bc3b-48e6-9705-d4053913ca5a servicePrincipalClientSecret=ad4ce1a0-1407-45e0-be78-5e8e27a23e12
+#set the first RBAC binding to the current user
+userPrincipalName=$(az ad signed-in-user show --query userPrincipalName -o tsv)
+
+echo "apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ${CLUSTERNAME}-cluster-admins
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: ${userPrincipalName}" > ./templates/basic-azure-ad-binding.yaml
+
+az aks get-credentials --resource-group $RG --name $CLUSTERNAME --admin
+kubectl apply -f ./templates/basic-azure-ad-binding.yaml
