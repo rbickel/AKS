@@ -2,10 +2,16 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "servicePrincipalAppId": {
-            "type": "string"
+        "servicePrincipalClientId": {
+            "metadata": {
+                "description": "Client ID (used by cloudprovider)"
+            },
+            "type": "securestring"
         },
-        "servicePrincipalAppSecret": {
+        "servicePrincipalClientSecret": {
+            "metadata": {
+                "description": "The Service Principal Client Secret."
+            },
             "type": "securestring"
         },
         "aadTenantId": {
@@ -55,10 +61,6 @@
                 "serviceCidr": "20.0.0.0/16",
                 "dnsServiceIP": "20.0.0.10",
                 "dockerBridgeCidr": "30.0.0.1/16"
-            },
-            "servicePrincipal": {
-                "clientId": "[parameters('servicePrincipalAppId')]",
-                "secret": "[parameters('servicePrincipalAppSecret')]"
             },
             "aadIntegration": {
                 "serverAppId": "[parameters('aadServerAppId')]",
@@ -174,10 +176,6 @@
                         "type": "VirtualMachineScaleSets"
                     }
                 ],
-                "servicePrincipalProfile": {
-                    "clientId": "[variables('aks').servicePrincipal.clientId]",
-                    "secret": "[variables('aks').servicePrincipal.secret]"
-                },
                 "addonProfiles": {
                     "omsagent": {
                         "enabled": true,
@@ -199,6 +197,10 @@
                     "serverAppID": "[variables('aks').aadIntegration.serverAppId]",
                     "serverAppSecret": "[variables('aks').aadIntegration.serverAppSecret]",
                     "tenantID": "[variables('aks').aadIntegration.tenantId]"
+                },
+                "servicePrincipalProfile": {
+                    "clientId": "[parameters('servicePrincipalClientId')]",
+                    "Secret": "[parameters('servicePrincipalClientSecret')]"
                 }
             }
         }

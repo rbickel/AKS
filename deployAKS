@@ -1,8 +1,19 @@
-# RBAC serverAppId
-rbacAppId
+RG="askbestpractices-rg"
+TENANTID=$(az account show | jq -r '.tenantId')
 
 # RBAC AAD Server App Id
-serverAppId=""
-
+serverApplicationId=""
+serverApplicationSecret=""
 # RBAC AAD Client App Id
-clientAppId="
+clientApplicationId=""
+
+#comment this line if principals are already created
+. ./_createServicePrincipals
+
+echo $rbacAppId
+echo $serverApplicationId
+echo $clientAppId
+
+az group create --name $RG --location "West Europe"
+az group deployment create --resource-group $RG --template-file ./templates/aks.rbac-aad-autoscaler.json \
+   --parameters aadTenantId=$TENANTID aadServerAppId=$serverApplicationId aadServerAppSecret=$serverApplicationSecret aadClientAppId=$clientApplicationId kubernetesVersion=1.13.5 servicePrincipalClientId=70653904-bc3b-48e6-9705-d4053913ca5a servicePrincipalClientSecret=ad4ce1a0-1407-45e0-be78-5e8e27a23e12
